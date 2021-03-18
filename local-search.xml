@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  
+  
+  
+  <entry>
+    <title>thisistestfortags</title>
+    <link href="/2021/03/18/thisistestfortags/"/>
+    <url>/2021/03/18/thisistestfortags/</url>
+    
+    <content type="html"><![CDATA[<p>按时打发第三方的是</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>分类</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>happy</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>Hello World</title>
+    <link href="/2021/03/18/hello-world/"/>
+    <url>/2021/03/18/hello-world/</url>
+    
+    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo new <span class="hljs-string">&quot;My New Post&quot;</span><br></code></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo server<br></code></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo generate<br></code></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo deploy<br></code></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content>
+    
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>在调试器中理解计算机系统-pci总线：系统的脊梁</title>
+    <link href="/2021/03/18/2021-03-18-%E5%9C%A8%E8%B0%83%E8%AF%95%E5%99%A8%E4%B8%AD%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F-pci%E6%80%BB%E7%BA%BF%EF%BC%9A%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%84%8A%E6%A2%81/"/>
+    <url>/2021/03/18/2021-03-18-%E5%9C%A8%E8%B0%83%E8%AF%95%E5%99%A8%E4%B8%AD%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F-pci%E6%80%BB%E7%BA%BF%EF%BC%9A%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%84%8A%E6%A2%81/</url>
+    
+    <content type="html"><![CDATA[<ul><li>使用 windbg 打开 dump文件，加载好符号之后使用  !devnode 0 1 列出内核中的设备树</li></ul><p><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318163934.png" alt="image-20210318160745998"></p><ul><li>浏览输出的结果，最顶级的节点是 HTREE/ROOT ，然后是一级子节点，一级子节点是根据注册表加载的</li><li>在固件中的acpi脚本中，都有pci总线的定义。会触发加载pci的驱动</li></ul><p><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318163935.png" alt="image-20210318160948498"></p><ul><li>pci驱动初始化时，会枚举pci总线上的设备，为其创建 PDO， 再把 pdo 传递给PnP 服务让其为这个pdo寻找和安装驱动程序。（寻找和安装驱动程序是由PnP的三环服务组件来完成的，安装驱动是根据设备的厂商id和产品id来安装）</li><li>来继续看一下intel的集成显卡设备igfx的设备，搜索igfx找到设备对象</li></ul><p><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318162236.png" alt="image-20210318162236324"></p><ul><li>观察设备路径： InstancePath is “PCI\VEN_8086&amp;DEV_0F31&amp;SUBSYS_0F318086&amp;REV_11\3&amp;13c0b0c5&amp;0&amp;10”</li><li>这其中包含了intel的厂商id 8086 ，和这款 gpu的产品id 0F31</li><li>通过 !devnode 8589e4c0 查看详细信息</li></ul><p><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318163936.png" alt="image-20210318162443044"></p><ul><li>得到 igfx的 pdo， 来看一下这个驱动的设备栈情况，下面是经典的windows 驱动模型 wdm 的设备栈，这四列分别是设备对象，驱动对象，设备扩展，以及对象名</li></ul><p><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318163937.png" alt="image-20210318162737379"></p><ul><li>可以看到顶层的 igfx设备对象（FDO）和两个acpi过滤设备对象和一个底层的pci设备对象（PDO）</li><li>使用 !DevExt 858980e8 来观察一下 PDO 对象的扩展属性，对于这种 PDO 设备对象， 它的扩展属性里面存储了这个设备的一些信息</li></ul><p><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318163938.png" alt="image-20210318163849992"></p><ul><li>执行x nt!pnp*，可以观察到NT内核中大量以PnP开头的函数或者全局变量，它们就是内核中的PnP执行体</li><li><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318163939.png" alt="image-20210318163907278"></li></ul><ul><li>pci 配置空间结构</li></ul><p><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318163940.png" alt="image-20210318161618651"></p>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>windows、debug</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>typora+picgo使用gitee图床</title>
+    <link href="/2021/03/18/2021-03-18-typora-picgo%E4%BD%BF%E7%94%A8gitee%E5%9B%BE%E5%BA%8A/"/>
+    <url>/2021/03/18/2021-03-18-typora-picgo%E4%BD%BF%E7%94%A8gitee%E5%9B%BE%E5%BA%8A/</url>
+    
+    <content type="html"><![CDATA[<ol><li>gitee 创建仓库并且生成私人令牌</li><li>下载 picgo， 配置令牌，gitee账号，仓库名，仓库路径</li><li>typora 设置图片上传</li></ol><p><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318113620.png" alt="image-20210318113022685"></p><p>test</p><p><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318113621.png" alt="image-20210318113229506"></p>]]></content>
+    
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>hexo安装与github自动部署</title>
+    <link href="/2021/03/10/2021-03-10-hexo%E5%AE%89%E8%A3%85%E4%B8%8Egithub%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/"/>
+    <url>/2021/03/10/2021-03-10-hexo%E5%AE%89%E8%A3%85%E4%B8%8Egithub%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/</url>
+    
+    <content type="html"><![CDATA[<ol><li><p>github 创建项目 githubUsername.github.io</p></li><li><p>下载 git</p><ol><li><p>```text<br>git config –global user.name “你的GitHub用户名”<br>git config –global user.email “你的GitHub注册邮箱”</p><figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs autohotkey"><br><span class="hljs-number">3</span>. ssh 创建公钥，github 用户设置 ssh 添加公钥<br><br>   <span class="hljs-number">1</span>. ```text<br>      ssh-keygen -t rsa -C <span class="hljs-string">&quot;你的GitHub注册邮箱&quot;</span><br></code></pre></td></tr></table></figure></li><li><p>然后直接三个回车即可，默认不需要设置密码。最后得到了两个文件：<code>id_rsa</code>和<code>id_rsa.pub</code></p></li><li><p>打开 <code>id_rsa.pub 文件</code>，将里面的内容全部复制</p></li><li><p>测试 <code>ssh -T git@github.com</code></p></li></ol></li><li><p>安装nodejs</p><ol><li><p><code>npm install stable</code></p></li><li><p>```text<br>npm install -g hexo-cli</p><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><br><span class="hljs-bullet">5.</span> hexo 使用<br><br><span class="hljs-bullet">   1.</span> 创建 blog<br><span class="hljs-bullet">      1.</span> hexo init blogname<br><span class="hljs-bullet">   2.</span> hexo s 开启本地服务<br><span class="hljs-bullet">   3.</span> hexo g 生成静态页面<br><span class="hljs-bullet">   4.</span> hexo d 部署到github<br><br><span class="hljs-bullet">6.</span> 自动部署到github<br><br><span class="hljs-bullet">   1.</span> 安装插件<br><br><span class="hljs-bullet">      1.</span>  npm install hexo-deployer-git --save<br><br><span class="hljs-bullet">   2.</span> 修改配置<br><br><span class="hljs-bullet">      1.</span> <span class="hljs-code">```txt</span><br><span class="hljs-code">         deploy:</span><br><span class="hljs-code">           type: git</span><br><span class="hljs-code">           repo: &lt;repository url&gt; #https://bitbucket.org/JohnSmith/johnsmith.bitbucket.io</span><br><span class="hljs-code">           branch: [branch]</span><br><span class="hljs-code">           message: [message]</span><br></code></pre></td></tr></table></figure></li></ol></li></ol>]]></content>
+    
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>hexo资源</title>
+    <link href="/2021/03/10/2021-03-10-hexo%E8%B5%84%E6%BA%90/"/>
+    <url>/2021/03/10/2021-03-10-hexo%E8%B5%84%E6%BA%90/</url>
+    
+    <content type="html"><![CDATA[<h2 id="资源链接"><a href="#资源链接" class="headerlink" title="资源链接"></a>资源链接</h2><p><a href="https://jiayueshe.github.io/2021/02/17/hello-myblog/">Hello MyBlog | IT 学习 资源 (jiayueshe.github.io)</a></p>]]></content>
+    
+    
+    
+  </entry>
+  
+  
+  
+  
+</search>
