@@ -18,9 +18,25 @@
   <meta name="author" content="John Doe">
   <meta name="keywords" content="">
   
-  <title>归档 - KillAragorn&#39;s Blog</title>
+  <title>在调试器中理解计算机系统：acpi - KillAragorn&#39;s Blog</title>
 
   <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.4.0/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
 
 
 
@@ -48,7 +64,7 @@
 
 
 <body>
-  <header style="height: 60vh;">
+  <header style="height: 100vh;">
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
@@ -147,13 +163,54 @@
       <div class="full-bg-img">
         <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
           <div class="page-header text-center fade-in-up">
-            <span class="h2" id="subtitle" title="归档">
+            <span class="h2" id="subtitle" title="在调试器中理解计算机系统：acpi">
               
             </span>
 
             
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-03-19 09:19" pubdate>
+        2021年3月19日 上午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      401 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      4
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
           </div>
 
+          
+            <div class="scroll-down-bar">
+              <i class="iconfont icon-arrowdown"></i>
+            </div>
           
         </div>
       </div>
@@ -162,64 +219,123 @@
 
   <main>
     
-      <div class="container nopadding-x-md">
-        <div class="py-5" id="board"
-          >
-          
-          <div class="container">
-            <div class="row">
-              <div class="col-12 col-md-10 m-auto">
-                
-
-<div class="list-group">
-  <p class="h4">共计 5 篇文章</p>
-  <hr>
-  
-  
-    
       
-      <p class="h5">2021</p>
-    
-    <a href="/2021/03/19/%E5%9C%A8%E8%B0%83%E8%AF%95%E5%99%A8%E4%B8%AD%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%EF%BC%9Aacpi/" class="list-group-item list-group-item-action">
-      <span class="archive-post-title">在调试器中理解计算机系统：acpi</span>
-      <time style="float: right;">03-19</time>
-    </a>
-  
-    
-    <a href="/2021/03/18/2021-03-18-%E5%9C%A8%E8%B0%83%E8%AF%95%E5%99%A8%E4%B8%AD%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F-pci%E6%80%BB%E7%BA%BF%EF%BC%9A%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%84%8A%E6%A2%81/" class="list-group-item list-group-item-action">
-      <span class="archive-post-title">在调试器中理解计算机系统-pci总线：系统的脊梁</span>
-      <time style="float: right;">03-18</time>
-    </a>
-  
-    
-    <a href="/2021/03/18/2021-03-18-typora-picgo%E4%BD%BF%E7%94%A8gitee%E5%9B%BE%E5%BA%8A/" class="list-group-item list-group-item-action">
-      <span class="archive-post-title">typora+picgo使用gitee图床</span>
-      <time style="float: right;">03-18</time>
-    </a>
-  
-    
-    <a href="/2021/03/10/2021-03-10-hexo%E5%AE%89%E8%A3%85%E4%B8%8Egithub%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/" class="list-group-item list-group-item-action">
-      <span class="archive-post-title">hexo安装与github自动部署</span>
-      <time style="float: right;">03-10</time>
-    </a>
-  
-    
-    <a href="/2021/03/10/2021-03-10-hexo%E8%B5%84%E6%BA%90/" class="list-group-item list-group-item-action">
-      <span class="archive-post-title">hexo资源</span>
-      <time style="float: right;">03-10</time>
-    </a>
-  
-</div>
 
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">在调试器中理解计算机系统：acpi</h1>
+            
+            <div class="markdown-body">
+              <h2 id="acpi"><a href="#acpi" class="headerlink" title="acpi"></a>acpi</h2><h3 id="发展缘由"><a href="#发展缘由" class="headerlink" title="发展缘由"></a>发展缘由</h3><p>​        众所周知，现在的电脑有如此多类型，如此多厂家生产的如此多的设备，那么操作系统如何用一套代码来适应数量极其巨大的众多的硬件是一个复杂的问题。</p>
+<pre><code>     acpi 是一种 os 和硬件之间的隔离带。解决了硬件的差异性，为 os访问硬件提供了统一的接口。而acpi 对硬件是有具体的实现。
+</code></pre>
+<p>​         acpi 不是一蹴而就的，在96年 wintel 就推出了 apm 规范。</p>
+<img src="在调试器中理解计算机系统：acpi/image-20210319093153765.png" srcset="/img/loading.gif" lazyload alt="image-20210319093153765" style="zoom:50%;" />
 
+<p>​        直到 1996年才推出了 acpi 规范。</p>
+<img src="在调试器中理解计算机系统：acpi/image-20210319093238238.png" srcset="/img/loading.gif" lazyload alt="image-20210319093238238" style="zoom: 80%;" />
 
-
-
-              </div>
+<h3 id="acpi-：一门编程语言，硬件接口，及电源管理"><a href="#acpi-：一门编程语言，硬件接口，及电源管理" class="headerlink" title="acpi ：一门编程语言，硬件接口，及电源管理"></a>acpi ：一门编程语言，硬件接口，及电源管理</h3><ol>
+<li>acpi 定义了一套脚本语言，叫做 ASL，intel 提供编译器（IASL），编译成字节码（AML），打包进固件里。</li>
+<li>通常由操作系统的驱动程序来解释执行 AML。在 windows 中对应的驱动程序就是 acpi.sys，解释器相关的函数可以通过windbg命令<code>x acpi!*amli*</code>来查看</li>
+<li>ACPI中有对象的概念，有类，方法，数据成员的概念。这些都存放在 ACPI namespace 中。</li>
+<li>ACPI将数据存放在各种表中，每个表中存储一些数据。</li>
+<li>可以使用工具 <code>acpidump -o xxx.bin</code>来 dump acpi数据。</li>
+<li>使用工具<code>acpiextract -a xxx.bin</code>来提取各个表的数据。</li>
+<li>使用工具<code>iasl -d xxx.daat</code>来反编译 AML 字节码，以上几部截图如下</li>
+</ol>
+<p><img src="%E5%9C%A8%E8%B0%83%E8%AF%95%E5%99%A8%E4%B8%AD%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%EF%BC%9Aacpi/image-20210319094400255.png" srcset="/img/loading.gif" lazyload alt="步骤截图"></p>
+<ol start="8">
+<li>最经典的  BAT0 电池对象的脚本代码</li>
+</ol>
+<p><img src="%E5%9C%A8%E8%B0%83%E8%AF%95%E5%99%A8%E4%B8%AD%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%EF%BC%9Aacpi/image-20210319094508201.png" srcset="/img/loading.gif" lazyload alt="电池对象的脚本代码"></p>
+<ol start="9">
+<li>windbg中也有 AMLI 相关的扩展插件。<code>!amli dns</code>可以dump出 ACPI namespace 中的设备以及方法。</li>
+</ol>
+<p><img src="%E5%9C%A8%E8%B0%83%E8%AF%95%E5%99%A8%E4%B8%AD%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%EF%BC%9Aacpi/image-20210319094623877.png" srcset="/img/loading.gif" lazyload alt="windbg amli插件"></p>
+<ol start="10">
+<li>acpi 的架构图</li>
+</ol>
+<p><img src="%E5%9C%A8%E8%B0%83%E8%AF%95%E5%99%A8%E4%B8%AD%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%EF%BC%9Aacpi/image-20210319093735753.png" srcset="/img/loading.gif" lazyload alt="ACPI架构图"></p>
+<h3 id=""><a href="#" class="headerlink" title=""></a></h3>
             </div>
-          </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/windows%E5%8E%9F%E7%90%86/">windows原理</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/windows/">windows</a>
+                    
+                      <a class="hover-with-bg" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8E%9F%E7%90%86/">计算机原理</a>
+                    
+                      <a class="hover-with-bg" href="/tags/acpi/">acpi</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/03/18/2021-03-18-%E5%9C%A8%E8%B0%83%E8%AF%95%E5%99%A8%E4%B8%AD%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F-pci%E6%80%BB%E7%BA%BF%EF%BC%9A%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%84%8A%E6%A2%81/">
+                        <span class="hidden-mobile">在调试器中理解计算机系统-pci总线：系统的脊梁</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
         </div>
       </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
     
 
     
@@ -300,9 +416,15 @@
 
 
 
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.0/dist/tocbot.min.js" ></script>
 
 
 
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.0/anchor.min.js" ></script>
 
 
 
