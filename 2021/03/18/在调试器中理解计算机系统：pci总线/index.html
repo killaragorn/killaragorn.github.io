@@ -18,7 +18,7 @@
   <meta name="author" content="John Doe">
   <meta name="keywords" content="">
   
-  <title>typora+picgo使用gitee图床 - KillAragorn&#39;s Blog</title>
+  <title>在调试器中理解计算机系统-pci总线：系统的脊梁 - KillAragorn&#39;s Blog</title>
 
   <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" />
 
@@ -163,7 +163,7 @@
       <div class="full-bg-img">
         <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
           <div class="page-header text-center fade-in-up">
-            <span class="h2" id="subtitle" title="typora+picgo使用gitee图床">
+            <span class="h2" id="subtitle" title="在调试器中理解计算机系统-pci总线：系统的脊梁">
               
             </span>
 
@@ -173,8 +173,8 @@
   
     <span class="post-meta">
       <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-      <time datetime="2021-03-18 11:35" pubdate>
-        2021年3月18日 中午
+      <time datetime="2021-03-18 16:03" pubdate>
+        2021年3月18日 下午
       </time>
     </span>
   
@@ -185,7 +185,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      38 字
+      444 字
     </span>
   
 
@@ -195,7 +195,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      1
+      5
        分钟
     </span>
   
@@ -229,17 +229,46 @@
         <div class="py-5" id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">typora+picgo使用gitee图床</h1>
+            <h1 style="display: none">在调试器中理解计算机系统-pci总线：系统的脊梁</h1>
             
             <div class="markdown-body">
-              <ol>
-<li>gitee 创建仓库并且生成私人令牌</li>
-<li>下载 picgo， 配置令牌，gitee账号，仓库名，仓库路径</li>
-<li>typora 设置图片上传</li>
-</ol>
-<p><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318113620.png" srcset="/img/loading.gif" lazyload alt="image-20210318113022685"></p>
-<p>test</p>
-<p><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318113621.png" srcset="/img/loading.gif" lazyload alt="image-20210318113229506"></p>
+              <ul>
+<li>使用 windbg 打开 dump文件，加载好符号之后使用  !devnode 0 1 列出内核中的设备树</li>
+</ul>
+<p><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318163934.png" srcset="/img/loading.gif" lazyload alt="image-20210318160745998"></p>
+<ul>
+<li>浏览输出的结果，最顶级的节点是 HTREE/ROOT ，然后是一级子节点，一级子节点是根据注册表加载的</li>
+<li>在固件中的acpi脚本中，都有pci总线的定义。会触发加载pci的驱动</li>
+</ul>
+<p><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318163935.png" srcset="/img/loading.gif" lazyload alt="image-20210318160948498"></p>
+<ul>
+<li>pci驱动初始化时，会枚举pci总线上的设备，为其创建 PDO， 再把 pdo 传递给PnP 服务让其为这个pdo寻找和安装驱动程序。（寻找和安装驱动程序是由PnP的三环服务组件来完成的，安装驱动是根据设备的厂商id和产品id来安装）</li>
+<li>来继续看一下intel的集成显卡设备igfx的设备，搜索igfx找到设备对象</li>
+</ul>
+<p><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318162236.png" srcset="/img/loading.gif" lazyload alt="image-20210318162236324"></p>
+<ul>
+<li>观察设备路径： InstancePath is “PCI\VEN_8086&amp;DEV_0F31&amp;SUBSYS_0F318086&amp;REV_11\3&amp;13c0b0c5&amp;0&amp;10”</li>
+<li>这其中包含了intel的厂商id 8086 ，和这款 gpu的产品id 0F31</li>
+<li>通过 !devnode 8589e4c0 查看详细信息</li>
+</ul>
+<p><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318163936.png" srcset="/img/loading.gif" lazyload alt="image-20210318162443044"></p>
+<ul>
+<li>得到 igfx的 pdo， 来看一下这个驱动的设备栈情况，下面是经典的windows 驱动模型 wdm 的设备栈，这四列分别是设备对象，驱动对象，设备扩展，以及对象名</li>
+</ul>
+<p><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318163937.png" srcset="/img/loading.gif" lazyload alt="image-20210318162737379"></p>
+<ul>
+<li>可以看到顶层的 igfx设备对象（FDO）和两个acpi过滤设备对象和一个底层的pci设备对象（PDO）</li>
+<li>使用 !DevExt 858980e8 来观察一下 PDO 对象的扩展属性，对于这种 PDO 设备对象， 它的扩展属性里面存储了这个设备的一些信息</li>
+</ul>
+<p><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318163938.png" srcset="/img/loading.gif" lazyload alt="image-20210318163849992"></p>
+<ul>
+<li>执行x nt!pnp*，可以观察到NT内核中大量以PnP开头的函数或者全局变量，它们就是内核中的PnP执行体</li>
+<li><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318163939.png" srcset="/img/loading.gif" lazyload alt="image-20210318163907278"></li>
+</ul>
+<ul>
+<li>pci 配置空间结构</li>
+</ul>
+<p><img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210318163940.png" srcset="/img/loading.gif" lazyload alt="image-20210318161618651"></p>
 
             </div>
             <hr>
@@ -249,7 +278,7 @@
                   <div class="post-meta mr-3">
                     <i class="iconfont icon-category"></i>
                     
-                      <a class="hover-with-bg" href="/categories/hexo/">hexo</a>
+                      <a class="hover-with-bg" href="/categories/windows%E5%8E%9F%E7%90%86/">windows原理</a>
                     
                   </div>
                 
@@ -257,7 +286,11 @@
                   <div class="post-meta">
                     <i class="iconfont icon-tags"></i>
                     
-                      <a class="hover-with-bg" href="/tags/hexo/">hexo</a>
+                      <a class="hover-with-bg" href="/tags/windows/">windows</a>
+                    
+                      <a class="hover-with-bg" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8E%9F%E7%90%86/">计算机原理</a>
+                    
+                      <a class="hover-with-bg" href="/tags/pci/">pci</a>
                     
                   </div>
                 
@@ -274,9 +307,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2021/03/18/2021-03-18-%E5%9C%A8%E8%B0%83%E8%AF%95%E5%99%A8%E4%B8%AD%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%EF%BC%9Apci%E6%80%BB%E7%BA%BF/">
+                      <a href="/2021/03/19/%E5%9C%A8%E8%B0%83%E8%AF%95%E5%99%A8%E4%B8%AD%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%EF%BC%9Aacpi/">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">在调试器中理解计算机系统-pci总线：系统的脊梁</span>
+                        <span class="hidden-mobile">在调试器中理解计算机系统：acpi</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -284,8 +317,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2021/03/10/2021-03-10-hexo%E5%AE%89%E8%A3%85%E4%B8%8Egithub%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/">
-                        <span class="hidden-mobile">hexo安装与github自动部署</span>
+                      <a href="/2021/03/18/typora-picgo%E4%BD%BF%E7%94%A8gitee%E5%9B%BE%E5%BA%8A/">
+                        <span class="hidden-mobile">typora+picgo使用gitee图床</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
