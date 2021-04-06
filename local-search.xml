@@ -4,19 +4,6 @@
   
   
   <entry>
-    <title></title>
-    <link href="/2021/04/02/windows%E5%86%85%E6%A0%B8%E9%A1%B5%E8%A1%A8%E9%9A%94%E7%A6%BB%E6%9C%BA%E5%88%B6/"/>
-    <url>/2021/04/02/windows%E5%86%85%E6%A0%B8%E9%A1%B5%E8%A1%A8%E9%9A%94%E7%A6%BB%E6%9C%BA%E5%88%B6/</url>
-    
-    <content type="html"><![CDATA[<h3 id="windows内核页表隔离机制"><a href="#windows内核页表隔离机制" class="headerlink" title="windows内核页表隔离机制"></a>windows内核页表隔离机制</h3><h4 id="一：构造内核中断门测试页表隔离机制存在"><a href="#一：构造内核中断门测试页表隔离机制存在" class="headerlink" title="一：构造内核中断门测试页表隔离机制存在"></a>一：构造内核中断门测试页表隔离机制存在</h4><h4 id="二：查看cr3异同"><a href="#二：查看cr3异同" class="headerlink" title="二：查看cr3异同"></a>二：查看cr3异同</h4><h4 id="三：逆向KiBreakPointShadow"><a href="#三：逆向KiBreakPointShadow" class="headerlink" title="三：逆向KiBreakPointShadow"></a>三：逆向KiBreakPointShadow</h4>]]></content>
-    
-    
-    
-  </entry>
-  
-  
-  
-  <entry>
     <title>win64位寻址模式及获取随机PTE_BASE</title>
     <link href="/2021/04/01/win%20x64%E5%AF%BB%E5%9D%80%E6%A8%A1%E5%BC%8F%E5%8F%8A%E8%8E%B7%E5%8F%96PTE_BASE/"/>
     <url>/2021/04/01/win%20x64%E5%AF%BB%E5%9D%80%E6%A8%A1%E5%BC%8F%E5%8F%8A%E8%8E%B7%E5%8F%96PTE_BASE/</url>
