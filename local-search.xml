@@ -4,6 +4,33 @@
   
   
   <entry>
+    <title>沙箱实现原理</title>
+    <link href="/2021/04/09/%E6%B2%99%E7%AE%B1%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/"/>
+    <url>/2021/04/09/%E6%B2%99%E7%AE%B1%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/</url>
+    
+    <content type="html"><![CDATA[<p>// 初次记录，待整理。。</p><ul><li><p>注册表回调</p><ul><li>  原理与minifilter一样</li></ul></li><li><p>sandbox中几个重要的概念</p><ul><li>  路径，删除，重定向，in and out sandbox</li><li>  文件，注册表，rpc lpc 通讯</li></ul></li><li><p>  沙盒根目录：\device\harddiskvolume1\sandbox</p></li><li><p>源路径：\device\harddiskvolume2\doc\hi.txt</p><ul><li>  内部路径：\device\harddiskvolume1\sandbox\harddiskvolume2\doc\hi.txt</li><li>  删除标记：\device\harddiskvolume1\sandbox\harddiskvolume2\doc\hi.txt.del</li></ul></li><li><p>操作文件：</p><ul><li>  外部已存在：拷贝外部到内部（层层复制），拷贝时，文件属性权限，ads流也要拷贝。之后再以新的路径重新发送irp</li><li>  外部不存在：内部直接创建文件。</li></ul></li><li><p>删除文件：</p><ul><li>外部已存在：标记为删除，但不要删除（遍历时要过滤此项）<ul><li>  沙盒程序遍历文件时：求一个外部路径与内部路径的交集，然后去除标记为删除的项</li></ul></li><li>  外部不存在：可以直接删除</li></ul></li><li><p>文件重定向实现</p><ul><li><p>windows io 管理器提供了一个方便的方法来重定向一个文件对象。通常使用文件过滤驱动（在文件打开和文件创建操作中）实现该方法，步骤如下</p><ol><li> 在 IRP_MJ_CREATE 的分发函数中，获得FILE_OBJECT的FileName 属性</li><li>用目标文件的完整路径替换源头的文件名字<ol><li> 用全名，包括卷设备对象的名字（例：Device\HardDiskVolume0\Doc\1.txt）</li><li> 可以释放掉原有的FileName.Buffer，同时用自己定义的缓冲区（buffer以nonpagedpool方式申请）替换它</li></ol></li><li> 设置 IoStatus的status字段为 STATUS_REPARSE，然后设置infomation字段为IO_REPARSE</li><li> 完成该irp请求</li><li> 返回 STATUS_REPARSE</li><li> minifilter中要调用 FltSetCallbackDataDirty（data）</li><li> io管理器接收到该返回后，便会触发另外一个文件打开操作，并发送一个IRP_MJ_CREATE的申请。</li></ol></li><li><p>具体实现</p><ul><li><p>CreateFile</p><ul><li>  首先确定该进程是否需要沙盒</li><li>  获取文件名（外部和内部的文件名）</li><li>判断沙盒中是否含有该文件的del文件，如果有则按照是否来自insandbox的请求和是否改变文件进行处理。<ul><li>  创建或改变该文件，来自外面，则重定向到内部</li><li>  创建或改变该文件，来自里面，则删除该标志文件，并交给文件系统去创建</li><li>  只读操作该文件，含有删除标志，访问失败</li></ul></li><li>  如果sandbox里面存在该文件，切请求来自sandbox，交给文件系统去处理；请求来自外面，reparse到里面</li><li>  如果操作不改变文件，但sandbox里没有这个文件并且请求来自sandbox，则reparse到外面；否则交给文件系统处理</li><li>操作改变文件，sandbox里没有该文件，则准备路径；如果sandbox外面有该文件，则负责<strong>拷贝</strong><ul><li>  拷贝时注意属性，流</li></ul></li><li>  重定向reparse</li></ul></li></ul></li></ul></li><li><p>DeleteFile</p><pre><code>      -   IRP_MJ_SET_INFORMATION          -   FileDispostionInformation      -   思路          -   获得文件名（外部和内部的文件名）          -   判断是否来自sandbox里面还是外面          -   如果是外面路径，则转换里面路径              -   不删除外面文件，在里面设置一个删除标志          -   如果是里面路径，获得外面路径              -   如果外面不存在，直接删除里面该文件              -   如果外面存在，则在里面建立一个删除标志，并删除  -   QueryDir      -   IRP_MJ_DIRECTORY_CONTROL      -   首先确定该进程是否需要sandbox      -   获取文件名（里面和外面的路径）      -   查询里面文件，并去掉含删除标记的文件      -   查询外部文件，并去掉含删除标记的文件      -   合并两部分内容  -   WriteFile      -   不需要重定向</code></pre></li><li><p>判断如何在沙盒内</p><ul><li>  windows最大路径260，so you know。。。</li></ul></li></ul>]]></content>
+    
+    
+    <categories>
+      
+      <category>windows驱动开发</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>windows驱动开发</tag>
+      
+      <tag>沙箱</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>MiniFilter 文件过滤框架复习</title>
     <link href="/2021/04/07/MiniFilter-%E6%96%87%E4%BB%B6%E8%BF%87%E6%BB%A4%E6%A1%86%E6%9E%B6%E5%A4%8D%E4%B9%A0/"/>
     <url>/2021/04/07/MiniFilter-%E6%96%87%E4%BB%B6%E8%BF%87%E6%BB%A4%E6%A1%86%E6%9E%B6%E5%A4%8D%E4%B9%A0/</url>
@@ -309,31 +336,6 @@
   
   
   <entry>
-    <title>windows驱动双机调试环境搭建（串口）</title>
-    <link href="/2021/03/10/%E5%8F%8C%E6%9C%BA%E8%B0%83%E8%AF%95%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/"/>
-    <url>/2021/03/10/%E5%8F%8C%E6%9C%BA%E8%B0%83%E8%AF%95%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</url>
-    
-    <content type="html"><![CDATA[<ol start="2"><li><ol><li>  虚拟机设置中删除打印机，否则之后的设置调试串口要为2，然后添加串口，使用命名的管道<img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210401143517.png" alt="image-20210401142546535"></li></ol></li><li><p>虚拟机内部以管理员权限打开控制台</p><ol><li> 使用当前默认启动设置拷贝一个新的启动项<code>bcdedit /copy &#123;current&#125; /d&quot;windows debug with serial&quot; </code></li><li> 对新生成的启动项启用调试：<code>bcdedit /debug &#123;刚才生成的id&#125; on</code></li><li>设置启动项的调试方法：<code>bcdedit /set &#123;id&#125; debugtype serial</code><ol start="4"><li> <code>bcdedit /set &#123;id&#125; debugport 1</code></li><li> <code>bcdedit /set &#123;id&#125; baudrate 115200</code></li></ol></li><li>设置优先启动     1.  <code>bcdedit /displayorder &#123;current&#125; &#123;id&#125; </code></li></ol></li><li><p>新建一个windbg快捷方式，设置要调试的目标机器和符号路径</p><ul><li>  <code>windbg -k com:pipe,port=\\.\pipe\win_10_1903,resets=0,reconnect -y &quot;srv*D:\03_data\symbols*http://hzxxx2020.ax2401.com:9998/symbols/&quot;</code></li><li>  <img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210402161947.png" alt="image-20210402161940193"></li></ul></li></ol>]]></content>
-    
-    
-    <categories>
-      
-      <category>windows</category>
-      
-    </categories>
-    
-    
-    <tags>
-      
-      <tag>windows</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
     <title>hexo安装与github自动部署</title>
     <link href="/2021/03/10/hexo%E5%AE%89%E8%A3%85%E4%B8%8Egithub%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/"/>
     <url>/2021/03/10/hexo%E5%AE%89%E8%A3%85%E4%B8%8Egithub%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/</url>
@@ -351,6 +353,31 @@
     <tags>
       
       <tag>hexo</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>windows驱动双机调试环境搭建（串口）</title>
+    <link href="/2021/03/10/%E5%8F%8C%E6%9C%BA%E8%B0%83%E8%AF%95%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/"/>
+    <url>/2021/03/10/%E5%8F%8C%E6%9C%BA%E8%B0%83%E8%AF%95%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</url>
+    
+    <content type="html"><![CDATA[<ol start="2"><li><ol><li>  虚拟机设置中删除打印机，否则之后的设置调试串口要为2，然后添加串口，使用命名的管道<img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210401143517.png" alt="image-20210401142546535"></li></ol></li><li><p>虚拟机内部以管理员权限打开控制台</p><ol><li> 使用当前默认启动设置拷贝一个新的启动项<code>bcdedit /copy &#123;current&#125; /d&quot;windows debug with serial&quot; </code></li><li> 对新生成的启动项启用调试：<code>bcdedit /debug &#123;刚才生成的id&#125; on</code></li><li>设置启动项的调试方法：<code>bcdedit /set &#123;id&#125; debugtype serial</code><ol start="4"><li> <code>bcdedit /set &#123;id&#125; debugport 1</code></li><li> <code>bcdedit /set &#123;id&#125; baudrate 115200</code></li></ol></li><li>设置优先启动     1.  <code>bcdedit /displayorder &#123;current&#125; &#123;id&#125; </code></li></ol></li><li><p>新建一个windbg快捷方式，设置要调试的目标机器和符号路径</p><ul><li>  <code>windbg -k com:pipe,port=\\.\pipe\win_10_1903,resets=0,reconnect -y &quot;srv*D:\03_data\symbols*http://hzxxx2020.ax2401.com:9998/symbols/&quot;</code></li><li>  <img src="https://gitee.com/zaixiabeiming/blog_image/raw/master/images/20210402161947.png" alt="image-20210402161940193"></li></ul></li></ol>]]></content>
+    
+    
+    <categories>
+      
+      <category>windows</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>windows</tag>
       
     </tags>
     
