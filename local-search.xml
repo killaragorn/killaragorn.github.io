@@ -4,6 +4,33 @@
   
   
   <entry>
+    <title>wow64系统函数执行流程分析</title>
+    <link href="/2021/04/10/wow64%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/"/>
+    <url>/2021/04/10/wow64%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/</url>
+    
+    <content type="html"><![CDATA[<ol><li> 本文以win764 sp1 为例子，研究 32程序是如何在64位系统上运行的。</li></ol><ul><li>  使用 windbg 64位启动目标程序，查看程序加载的模块，发现程序加载了两个ntdll，其中ntdll32是作为32程序调用64程序的入口点</li></ul><p><img src="2021-04-10-wow64%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/image-20210410091209936.png" alt="image-20210410091209936"></p><ul><li>  从 kernel32！CreateFileW开始发现 CreateFileW进入kernelBase的CreateFileW（这是pe的导入表转发）</li></ul><p><img src="2021-04-10-wow64%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/image-20210410092700216.png" alt="image-20210410092700216"></p><ul><li>  KernelBase中CreateFileW做了很多参数的判断和转化，复杂了一些，我们找到 调用 ntdll32！NtCreateFile的地方</li></ul><p><img src="2021-04-10-wow64%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/image-20210410092937245.png" alt="image-20210410092937245"></p><p><img src="2021-04-10-wow64%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/image-20210410093025944.png" alt="image-20210410093025944"></p><ul><li>  在 ntdll32！NtCreateFile中，将eax赋值为函数调用编号，edx指向栈上的参数，将ecx清零，然后经过一个call跳走，我们来看看 fs:[c0]中是个什么。在64位系统中，fs指向当前线程的TEB，32位程序中，fs指向的 32位的TEB，GS指向的是64位的TEB，查看TEB32的结构体，发现这个字段是WOW32Reserved，在window 32位系统中，windows支持16位程序的运行就是通过这个字段进行中转，所有64系统中还是使用这个字段进行中转。</li></ul><p><img src="2021-04-10-wow64%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/image-20210410093736445.png" alt="image-20210410093736445"></p><p><img src="2021-04-10-wow64%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/image-20210410093358821.png" alt="image-20210410093358821"></p><ul><li>  反汇编这个地址之后发现，这地址属于模块 wow64cpu，同时这个模块属于<code>c:\windows\system32</code>目录，是一个64位的模块 ，我们现在来整理一下调用逻辑<code>kernle32!CreateFileW -&gt; kernelBase!CreateFileW  -&gt; ntdll32!NtCreateFile  -&gt; wow64cpu!x86SwitchTo64BitMode</code>，根据这个符号的名字，我们确定这是32位进入64的入口点，那么到底是如何转换的呢？就是通过下面这条长跳指令<code>jmp 0033:74eb271e</code>转换的。这里经历了一个长跳，段寄存器由23变为33，挂上双机调试，查看一下段选择子的属性，发现33这个段选择子指向的代码段已经是64位的了。</li></ul><p><img src="2021-04-10-wow64%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/image-20210410094407223.png" alt="image-20210410094407223"></p><ul><li>  单步一下，发现跳转的目标是<code>wow64cpu!CpupReturnFromSimulatedCode</code>，来看一下这些代码究竟做了些什么事。</li></ul><p><img src="2021-04-10-wow64%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/image-20210410094530570.png" alt="image-20210410094530570"></p><p><img src="2021-04-10-wow64%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/image-20210410094915533.png" alt="image-20210410094915533"></p><ul><li>  ①：将之前 <code>call dword ptr fs:[c0]</code>取出32位的返回地址</li><li>  ②：将返回地址保存起来</li><li>  ③：保存32位的esp</li><li>  ④：r12 这里指向的是TEB， R12+1480H 是 TLS Slots，存储了一些64位线程的环境以及32位线程的数据。</li><li>  ⑤：对 Tls slots 中缓存的 rsp 清零</li><li>  ⑥：edx 中存储的是参数的起始地址，现在保存到r11d中</li><li>  ⑦：这里起始是一个优化后的 switch case 结构的查找表，使用 <code>dps r15</code>  查看一下这个表中存储了哪些数据。这个表中存储的各个函数地址其实针对的是调用时32位传进来的参数是否需要参数转换，大部分的nt函数的ecx都是0，所以接下来主要分析 ecx = 0的情况。</li></ul><p><img src="2021-04-10-wow64%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/image-20210410095643648.png" alt="image-20210410095643648"></p><ul><li>  ecx = 0时，以下这些代码，将一些寄存器的值保存起来之后，将eax存储的内核调用号给了ecx，然后调用<code>wow64cpu!_imp_Wow64SystemServiceEx </code>函数</li></ul><p><img src="2021-04-10-wow64%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/image-20210410100245416.png" alt="image-20210410100245416"></p><ul><li>  接下来主要分析wow64cpu!_imp_Wow64SystemServiceEx 这个函数，这个函数还是稍微复杂一点</li></ul><p><img src="2021-04-10-wow64%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/image-20210410103245446.png" alt="image-20210410103245446"></p><p><img src="2021-04-10-wow64%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/image-20210410103307091.png" alt="image-20210410103307091"></p><ul><li>  在 call r12 下断，调用进入 <code>wow64!whNtCreateFile</code>函数，这个函数中，将参数转换成64位，然后就直接执行64位的 NtCreateFile 函数了。</li></ul><p><img src="2021-04-10-wow64%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/image-20210410103653508.png" alt="image-20210410103653508"></p><ul><li>总结一下：在window 64上的 32 程序调用系统 API时，流程如下<ol><li> <code>kernel32!CreateFileW</code></li><li> <code>kernelBase!CreateFileW</code></li><li> <code>ntdll32!NtCreateFile</code></li><li> <code>wow64cpu!x86SwitchTo64BitMode</code></li><li> <code>wow64cpu!CpupReturnFromSimulatedCode</code>：这里会根据系统调用跳转到不同的地方，我们值分析了 ecx为0的情况。</li><li> ecx = 0 时，<code>wow64cpu!_imp_Wow64SystemServiceEx </code>：根据系统调用号的高4位作为函数表索引，低12位作为函数表内地址索引。跳转到对应的wow64转换函数中</li><li> <code>wow64!whNtCreateFile</code>：这里对参数进行了转换，然后调用64位的nt函数</li><li> <code>ntdll!NtCreateFile</code></li></ol></li></ul>]]></content>
+    
+    
+    <categories>
+      
+      <category>windows原理</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>逆向</tag>
+      
+      <tag>wow64</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>沙箱实现原理</title>
     <link href="/2021/04/09/%E6%B2%99%E7%AE%B1%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/"/>
     <url>/2021/04/09/%E6%B2%99%E7%AE%B1%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/</url>
